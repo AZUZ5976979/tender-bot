@@ -1,7 +1,9 @@
+import os
+
 # Конфигурация бота
 
-# Вставьте сюда ваш токен от BotFather (строка вида 123456:ABC-DEF...)
-BOT_TOKEN = "ВСТАВЬТЕ_СЮДА_ВАШ_ТОКЕН"
+# Читаем токен из переменных окружения Render
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "")
 
 # Ключевые слова для поиска тендеров
 KEYWORDS = [
@@ -17,8 +19,10 @@ KEYWORDS = [
 ]
 
 # Фильтр по сумме (в сумах)
-MIN_AMOUNT = 1_000_000      # 1 миллион сум
-MAX_AMOUNT = 5_000_000_000  # 5 миллиардов сум
+MIN_AMOUNT = 1_000_000
+MAX_AMOUNT = 5_000_000_000
 
-# Как часто проверять тендеры (в минутах)
 CHECK_INTERVAL = 30
+
+# Читаем Chat ID из переменных окружения Render
+YOUR_CHAT_ID = int(os.environ.get("YOUR_CHAT_ID", "0"))

@@ -1,0 +1,67 @@
+import requests
+from datetime import datetime, timedelta
+
+class GosZakupParser:
+    def __init__(self):
+        self.base_url = "https://api.goszakup.uz/uz/rest/registry/lots"
+        self.headers = {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+            'Accept': 'application/json'
+        }
+    
+    def get_recent_tenders(self, days_back=1):
+        """Получить тендеры за последние N дней"""
+        try:
+            params = {
+                'page': 1,
+                'size': 50,
+                'sort': 'created_at',
+                'order': 'desc'
+            }
+            
+            response = requests.get(self.base_url, params=params, headers=self.headers, timeout=30)
+            response.raise_for_status()
+            data = response.json()
+            
+            tenders = []
+            
+            if 'data' in data and 'lots' in data['data']:
+                for lot in data['data']['lots']:
+                    tender = self.parse_tender(lot)
+                    if tender:
+                        tenders.append(tender)
+            
+            return tenders
+            
+        except Exception as e:
+            print(f"Ошибка парсинга: {e}")
+            return []
+    
+    def parse_tender(self, lot):
+        """Парсинг одного тендера"""
+        try:
+            tender_id = str(lot.get('id', ''))
+            title = lot.get('name', '') or lot.get('title', '')
+            description = lot.get('description', '')
+            amount = lot.get('start_price', '') or lot.get('amount', 0)
+            customer = lot.get('customer', {}).get('name', '') if isinstance(lot.get('customer'), dict) else ''
+            deadline = lot.get('end_date', '') or lot.get('deadline', '')
+            link = f"https://goszakup.uz/uz/registry/lots/{tender_id}"
+            
+            try:
+                amount_num = float(str(amount).replace(',', '').replace(' ', ''))
+            except:
+                amount_num = 0
+            
+            return {
+                'id': tender_id,
+                'title': title,
+                'description': description,
+                'amount': amount_num,
+                'customer': customer,
+                'deadline': deadline,
+                'link': link
+            }
+        except Exception as e:
+            print(f"Ошибка парсинга тендера: {e}")
+            return None

@@ -1,0 +1,28 @@
+import sqlite3
+from datetime import datetime
+
+class Database:
+    def __init__(self):
+        self.conn = sqlite3.connect('tenders.db')
+        self.cursor = self.conn.cursor()
+        self.create_table()
+    
+    def create_table(self):
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS sent_tenders (
+                tender_id TEXT PRIMARY KEY,
+                sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        ''')
+        self.conn.commit()
+    
+    def is_tender_sent(self, tender_id):
+        self.cursor.execute('SELECT 1 FROM sent_tenders WHERE tender_id = ?', (tender_id,))
+        return self.cursor.fetchone() is not None
+    
+    def mark_tender_sent(self, tender_id):
+        self.cursor.execute('INSERT INTO sent_tenders (tender_id) VALUES (?)', (tender_id,))
+        self.conn.commit()
+    
+    def close(self):
+        self.conn.close()
